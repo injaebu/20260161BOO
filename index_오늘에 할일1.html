@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 할일</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-page: #f5f4f0;
+      --bg-card: #ffffff;
+      --bg-secondary: #f5f4f0;
+      --bg-info: #e6f1fb;
+      --bg-success: #eaf3de;
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #888780;
+      --text-info: #185fa5;
+      --text-success: #3b6d11;
+      --border: rgba(0,0,0,0.12);
+      --border-hover: rgba(0,0,0,0.25);
+      --border-info: rgba(24,95,165,0.35);
+      --border-success: rgba(59,109,17,0.4);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-page: #1a1a18;
+        --bg-card: #242422;
+        --bg-secondary: #2c2c2a;
+        --bg-info: #0c447c;
+        --bg-success: #27500a;
+        --text-primary: #f0ede6;
+        --text-secondary: #b4b2a9;
+        --text-tertiary: #666560;
+        --text-info: #85b7eb;
+        --text-success: #c0dd97;
+        --border: rgba(255,255,255,0.1);
+        --border-hover: rgba(255,255,255,0.22);
+        --border-info: rgba(133,183,235,0.35);
+        --border-success: rgba(192,221,151,0.4);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif;
+      background: var(--bg-page);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1.25rem 1.5rem 1rem;
+      border-bottom: 0.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-box {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--bg-info);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .icon-box i { font-size: 18px; color: var(--text-info); }
+
+    .header-title h1 {
+      font-size: 16px; font-weight: 500;
+      color: var(--text-primary); line-height: 1.2;
+    }
+    .header-title p {
+      font-size: 12px; color: var(--text-secondary); margin-top: 1px;
+    }
+
+    .count-badge {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .input-area {
+      padding: 1rem 1.5rem;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .todo-input {
+      flex: 1;
+      height: 38px;
+      font-size: 14px;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border-hover);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .todo-input::placeholder { color: var(--text-tertiary); }
+    .todo-input:focus { border-color: var(--border-info); }
+
+    .add-btn {
+      height: 38px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      background: var(--bg-info);
+      color: var(--text-info);
+      border: 0.5px solid var(--border-info);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .add-btn:hover { opacity: 0.85; }
+    .add-btn:active { transform: scale(0.97); }
+
+    .todo-list {
+      padding: 0 1.5rem 0.5rem;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      padding: 1.5rem 0;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg-secondary);
+      transition: opacity 0.2s;
+    }
+    .todo-item.done { opacity: 0.5; }
+
+    .check-btn {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid var(--border-hover);
+      background: transparent;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .check-btn.checked {
+      border-color: var(--border-success);
+      background: var(--bg-success);
+    }
+    .check-btn i { font-size: 12px; color: var(--text-success); }
+
+    .todo-label {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+    .todo-label.done-text {
+      text-decoration: line-through;
+      color: var(--text-tertiary);
+    }
+
+    .del-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      padding: 2px;
+      display: flex; align-items: center;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .del-btn:hover { color: var(--text-primary); }
+    .del-btn i { font-size: 14px; }
+
+    .card-footer {
+      padding: 0.75rem 1.5rem;
+      border-top: 0.5px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .clear-btn {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+      font-family: inherit;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .clear-btn:hover { color: var(--text-primary); }
+    .clear-btn i { font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon-box">
+      <i class="ti ti-checklist" aria-hidden="true"></i>
+    </div>
+    <div class="header-title">
+      <h1>오늘의 할일</h1>
+      <p id="date-label"></p>
+    </div>
+    <span class="count-badge" id="count-badge">0 / 0</span>
+  </div>
+
+  <div class="input-area">
+    <input class="todo-input" id="todo-input" type="text" placeholder="할 일을 입력하세요..." maxlength="60" />
+    <button class="add-btn" onclick="addTodo()">
+      <i class="ti ti-plus" aria-hidden="true"></i>추가
+    </button>
+  </div>
+
+  <div class="todo-list" id="todo-list">
+    <p class="empty-msg" id="empty-msg">아직 할 일이 없어요. 오늘 할 일을 추가해보세요 ✏️</p>
+  </div>
+
+  <div class="card-footer">
+    <button class="clear-btn" onclick="clearDone()">
+      <i class="ti ti-trash" aria-hidden="true"></i>완료 항목 삭제
+    </button>
+  </div>
+</div>
+
+<script>
+  let todos = [];
+
+  function setDate() {
+    const d = new Date();
+    const days = ['일','월','화','수','목','금','토'];
+    document.getElementById('date-label').textContent =
+      `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  }
+
+  function updateBadge() {
+    const done = todos.filter(t => t.done).length;
+    document.getElementById('count-badge').textContent = `${done} / ${todos.length}`;
+  }
+
+  function render() {
+    const list = document.getElementById('todo-list');
+    const empty = document.getElementById('empty-msg');
+    list.querySelectorAll('.todo-item').forEach(e => e.remove());
+    empty.style.display = todos.length === 0 ? 'block' : 'none';
+
+    todos.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'todo-item' + (t.done ? ' done' : '');
+
+      const cb = document.createElement('button');
+      cb.className = 'check-btn' + (t.done ? ' checked' : '');
+      cb.innerHTML = t.done ? '<i class="ti ti-check" aria-hidden="true"></i>' : '';
+      cb.onclick = () => { todos[i].done = !todos[i].done; render(); updateBadge(); };
+
+      const label = document.createElement('span');
+      label.className = 'todo-label' + (t.done ? ' done-text' : '');
+      label.textContent = t.text;
+
+      const del = document.createElement('button');
+      del.className = 'del-btn';
+      del.innerHTML = '<i class="ti ti-x" aria-hidden="true"></i>';
+      del.onclick = () => { todos.splice(i, 1); render(); updateBadge(); };
+
+      row.appendChild(cb);
+      row.appendChild(label);
+      row.appendChild(del);
+      list.appendChild(row);
+    });
+    updateBadge();
+  }
+
+  function addTodo() {
+    const inp = document.getElementById('todo-input');
+    const text = inp.value.trim();
+    if (!text) return;
+    todos.push({ text, done: false });
+    inp.value = '';
+    render();
+    inp.focus();
+  }
+
+  function clearDone() {
+    todos = todos.filter(t => !t.done);
+    render();
+  }
+
+  document.getElementById('todo-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTodo();
+  });
+
+  setDate();
+  render();
+</script>
+</body>
+</html>
